@@ -6,11 +6,22 @@ public class PlayerLook : MonoBehaviour
 {
 
     public Camera cam;
+    public GameObject player;
+    private Vector3 offset;
     private float xRot = 0f;
+    private float yRot = 0f;
+
+    private float yOffset = 1f;
+    private float zOffset = 1f;
 
     public float xSens = 30f;
     public float ySens = 30f;
     // Start is called before the first frame update
+    private void Start()
+    {
+        Vector3 playerPosition = player.transform.position;
+        offset = new Vector3(playerPosition.x, playerPosition.y + yOffset, playerPosition.z + zOffset);
+    }
 
     public void ProcessLook(Vector2 input)
     {
@@ -19,10 +30,14 @@ public class PlayerLook : MonoBehaviour
         // claculate camera rot
         xRot -= (mousedY * Time.deltaTime) * ySens;
         xRot = Mathf.Clamp(xRot, -90f, 90f);
+        yRot += (mousedX * Time.deltaTime) * xSens;
+
+        offset = Quaternion.AngleAxis((mousedX * Time.deltaTime) * xSens, Vector3.up) * offset;
         // rotate camera up and down, and player left and right (left/right affects walking direction, and we dont want player model
         // // to rotate up down)
-        cam.transform.localRotation = Quaternion.Euler(xRot, 0,  0);
-        // rotate player. Rotating positive in up direction is to the right bc of LHR kms
-        transform.Rotate(Vector3.up * mousedX * Time.deltaTime * xSens);
+        cam.transform.position = player.transform.position + offset;
+        cam.transform.LookAt(player.transform.position);
+        //cam.transform.localRotation = Quaternion.Euler(xRot, 0,  0);
+
     }
 }

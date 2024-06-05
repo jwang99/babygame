@@ -2,23 +2,66 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class animationStateController : MonoBehaviour
+public class AnimationStateController : MonoBehaviour
 {
-    Animator animator;
-    ParentController controller;
+    public GameObject avatar;
+    private Animator animator;
+ 
+    public enum CharacterAnimationState
+    {
+        IDLE,
+        WALK,
+        RUN,
+        CRAWL,
+        CLIMB,
+    }
+
+    public CharacterAnimationState animationState;
     // Start is called before the first frame update
     void Start()
     {
-        animator = GetComponent<Animator>();
-        controller = GetComponent<ParentController>();
+        // animation state controller should be in main object. If avatar is
+        // a separate child object, it can be set as such and animation can be in avatar
+        if (avatar == null)
+        {
+            avatar = gameObject;
+        }
+        animator = avatar.GetComponent<Animator>();
+
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (controller.state == ParentController.ParentAction.FOLLOW_WALK)
+        if (animatorHasParameter("isWalking"))
         {
-            animator.SetBool("isWalking", true);
+            animator.SetBool("isWalking", animationState == CharacterAnimationState.WALK);
         }
+        if (animatorHasParameter("isRunning"))
+        {
+            animator.SetBool("isRunning", animationState == CharacterAnimationState.RUN);
+        }
+        if (animatorHasParameter("isCrawling"))
+        {
+            animator.SetBool("isCrawling", animationState == CharacterAnimationState.CRAWL);
+        }
+    }
+
+    public void TriggerClimb()
+    {
+        Debug.Log("trigger climb");
+        animator.SetTrigger("climbTrigger");
+    }
+
+    private bool animatorHasParameter(string name) 
+    {
+        for (int i = 0; i < animator.parameters.Length; i++)
+        {
+            if (animator.parameters[i].name == name)
+            {
+                return true;
+            }
+        }
+        return false;
     }
 }
