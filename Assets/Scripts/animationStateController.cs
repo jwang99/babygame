@@ -12,6 +12,7 @@ public class AnimationStateController : MonoBehaviour
         IDLE,
         WALK,
         RUN,
+        CARRY_RUN,
         CRAWL,
         CLIMB,
     }
@@ -44,6 +45,10 @@ public class AnimationStateController : MonoBehaviour
         if (animatorHasParameter("isCrawling"))
         {
             animator.SetBool("isCrawling", animationState == CharacterAnimationState.CRAWL);
+        }
+        if (animatorHasParameter("isCarryRunning"))
+        {
+            animator.SetBool("isCarryRunning", animationState == CharacterAnimationState.CARRY_RUN);
         }
     }
 

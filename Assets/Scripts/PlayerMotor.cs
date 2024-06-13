@@ -75,6 +75,7 @@ public class PlayerMotor : CharacterMotor
 
         Vector3 inputDirection = new Vector3(input.x, 0, input.y);
 
+        // move camera
         // TODO: figure out what this does lol
         Vector3 cameraDirection = cam.transform.forward;
         cameraDirection = Vector3.ProjectOnPlane(cameraDirection, Vector3.up);

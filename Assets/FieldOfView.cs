@@ -37,9 +37,9 @@ public class FieldOfView : MonoBehaviour
     private void FieldOfViewCheck()
     {
         Collider[] rangeChecks = Physics.OverlapSphere(transform.position, radius, targetMask);
-        
         if (rangeChecks.Length > 0)
         {
+
             Transform target = rangeChecks[0].transform; // only one possible object which is player
             Vector3 directionToTarget = (target.position - transform.position).normalized;
 

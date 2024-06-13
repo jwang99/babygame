@@ -11,8 +11,8 @@ public class PlayerLook : MonoBehaviour
     private float xRot = 0f;
     private float yRot = 0f;
 
-    private float yOffset = 1f;
-    private float zOffset = 1f;
+    private float yOffset = 0.1f;
+    private float zOffset = 0.1f;
 
     public float xSens = 30f;
     public float ySens = 30f;
@@ -21,6 +21,7 @@ public class PlayerLook : MonoBehaviour
     {
         Vector3 playerPosition = player.transform.position;
         offset = new Vector3(playerPosition.x, playerPosition.y + yOffset, playerPosition.z + zOffset);
+        cam.transform.position = player.transform.position + offset;
     }
 
     public void ProcessLook(Vector2 input)

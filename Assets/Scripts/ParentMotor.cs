@@ -10,11 +10,21 @@ public class ParentMotor : CharacterMotor
     public float targetMinDistance = 1f;
 
     public NavMeshAgent agent;
+    private FieldOfView fov;
+
+    public float defaultSpeed = 3f;
+    public float runningSpeed = 5f;
+
+
+    // retrieval variables
+    public Vector3 safeLocation;
     public enum ParentAction
     {
         IDLE,
         FOLLOW_WALK,
         FOLLOW_RUN,
+        SAFE_ZONE,
+        RETURN_TO_DEFAULT,
         //CLEANING,
         //CARRYING_OBJECT,
     }
@@ -22,12 +32,16 @@ public class ParentMotor : CharacterMotor
     public int level;
 
     public ParentAction actionState;
+
     // Start is called before the first frame update
     void Start()
     {
+        safeLocation = objectToFollow.transform.position;
         base.animationStateController = GetComponent<AnimationStateController>();
         actionState = ParentAction.IDLE;
+        setAnimationState();
         agent = GetComponent<NavMeshAgent>();
+        fov = GetComponent<FieldOfView>();
     }
 
     // Update is called once per frame
@@ -56,7 +70,39 @@ public class ParentMotor : CharacterMotor
 
     void TutorialActions()
     {
+        // set action states
 
+        // if parent can see player, player is not where they are supposed to be,
+        // and parent is not actively retrieving player, have parent retrieve player
+
+        if (fov.canSeePlayer && targetIsOutOfZone() && !(actionState == ParentAction.FOLLOW_RUN || actionState == ParentAction.SAFE_ZONE) ) // start following player to bring back
+        {
+            actionState = ParentAction.FOLLOW_RUN;   
+          
+        }
+        if (actionState == ParentAction.FOLLOW_RUN) // start bringing back player
+        {
+            if (Vector3.Distance(transform.position, objectToFollow.transform.position) < 1f)
+            {
+                // TODO: trigger player to be picked up by parent
+                Debug.Log("safe zone mode");
+                actionState = ParentAction.SAFE_ZONE;
+
+            }
+        }
+        setAnimationState();
+
+        // perform actions
+
+        if (actionState == ParentAction.FOLLOW_RUN)
+        {
+            agent.SetDestination(objectToFollow.transform.position);
+            agent.speed = runningSpeed;
+        } else if (actionState == ParentAction.SAFE_ZONE)
+        {
+            agent.speed = defaultSpeed;
+            agent.SetDestination(safeLocation);
+        }
     }
 
     void Level1Actions()
@@ -97,6 +143,15 @@ public class ParentMotor : CharacterMotor
         {
             base.animationStateController.animationState = AnimationStateController.CharacterAnimationState.WALK;
         }
+        else if (actionState == ParentAction.FOLLOW_RUN)
+        {
+            // Debug.Log("follow run");
+            base.animationStateController.animationState = AnimationStateController.CharacterAnimationState.RUN;
+        }
+        else if (actionState == ParentAction.SAFE_ZONE)
+        {
+            base.animationStateController.animationState = AnimationStateController.CharacterAnimationState.CARRY_RUN;
+        }
         else if (actionState == ParentAction.IDLE) // needed?
         {
             base.animationStateController.animationState = AnimationStateController.CharacterAnimationState.IDLE;
@@ -106,6 +161,15 @@ public class ParentMotor : CharacterMotor
             base.animationStateController.animationState = AnimationStateController.CharacterAnimationState.IDLE;
 
         }
+    }
+
+    bool targetIsOutOfZone()
+    {
+        if (Vector3.Distance(objectToFollow.transform.position, safeLocation) > 1)
+        {
+            return true;
+        }
+        return false;
     }
 
 }
