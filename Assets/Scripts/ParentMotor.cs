@@ -6,6 +6,7 @@ using UnityEngine.AI;
 public class ParentMotor : CharacterMotor
 {
     public GameObject objectToFollow;
+    private PlayerMotor playerMotor;
     public float targetMaxDistance = 3f;
     public float targetMinDistance = 1f;
 
@@ -18,6 +19,8 @@ public class ParentMotor : CharacterMotor
 
     // retrieval variables
     public Vector3 safeLocation;
+    public Vector3 defaultLocation;
+    public Transform defaultTransform;
     public enum ParentAction
     {
         IDLE,
@@ -36,7 +39,10 @@ public class ParentMotor : CharacterMotor
     // Start is called before the first frame update
     void Start()
     {
+        playerMotor = objectToFollow.GetComponent<PlayerMotor>();
         safeLocation = objectToFollow.transform.position;
+        defaultLocation = transform.position;
+        defaultTransform = transform;
         base.animationStateController = GetComponent<AnimationStateController>();
         actionState = ParentAction.IDLE;
         setAnimationState();
@@ -87,7 +93,25 @@ public class ParentMotor : CharacterMotor
                 // TODO: trigger player to be picked up by parent
                 Debug.Log("safe zone mode");
                 actionState = ParentAction.SAFE_ZONE;
+                playerMotor.GetCarriedBy(gameObject);
 
+            }
+        }
+        if (actionState == ParentAction.SAFE_ZONE) {
+            if (Vector3.Distance(transform.position, safeLocation) < 2) {
+                actionState = ParentAction.RETURN_TO_DEFAULT;
+                // TODO: move this elsewhere
+                PlayerUI playerUI = objectToFollow.GetComponent<PlayerUI>();
+                playerUI.UpdatePromptText("[ctrl] to crawl");
+                playerMotor.GetPutDownBy(gameObject);
+            } 
+        }
+        if (actionState == ParentAction.RETURN_TO_DEFAULT) {
+            Debug.Log("parent return to default");
+            if (Vector3.Distance(transform.position, defaultLocation) < 1) {
+                actionState = ParentAction.IDLE;
+                transform.position = defaultTransform.position;
+                transform.rotation = defaultTransform.rotation;
             }
         }
         setAnimationState();
@@ -102,7 +126,11 @@ public class ParentMotor : CharacterMotor
         {
             agent.speed = defaultSpeed;
             agent.SetDestination(safeLocation);
+        } else if (actionState == ParentAction.RETURN_TO_DEFAULT) {
+            agent.SetDestination(defaultLocation);
         }
+
+
     }
 
     void Level1Actions()
@@ -139,7 +167,7 @@ public class ParentMotor : CharacterMotor
 
     void setAnimationState()
     {
-        if (actionState == ParentAction.FOLLOW_WALK)
+        if (actionState == ParentAction.FOLLOW_WALK || actionState == ParentAction.RETURN_TO_DEFAULT)
         {
             base.animationStateController.animationState = AnimationStateController.CharacterAnimationState.WALK;
         }
@@ -152,6 +180,7 @@ public class ParentMotor : CharacterMotor
         {
             base.animationStateController.animationState = AnimationStateController.CharacterAnimationState.CARRY_RUN;
         }
+ 
         else if (actionState == ParentAction.IDLE) // needed?
         {
             base.animationStateController.animationState = AnimationStateController.CharacterAnimationState.IDLE;

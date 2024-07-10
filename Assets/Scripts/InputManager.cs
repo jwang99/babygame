@@ -11,6 +11,7 @@ public class InputManager : MonoBehaviour
     private PlayerMotor motor;
     public Camera cam;
     private PlayerLook look;
+    private PlayerInteract interact;
     // Start is called before the first frame update
     void Awake()
     {
@@ -18,11 +19,13 @@ public class InputManager : MonoBehaviour
         onFoot = playerInput.OnFoot;
         motor = GetComponent<PlayerMotor>();
         look = cam.GetComponent<PlayerLook>();
+        interact = GetComponent<PlayerInteract>();
 
         onFoot.Jump.performed += ctx => motor.Jump();
         onFoot.Sprint.performed += ctx => motor.ToggleSprint();
         onFoot.Crawl.started += ctx => motor.CrawlStart();
         onFoot.Crawl.canceled += ctx => motor.CrawlCancel();
+        onFoot.Interact.performed += ctx => interact.TriggerInteract();
     }
 
 

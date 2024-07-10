@@ -16,6 +16,9 @@ public class PlayerMotor : CharacterMotor
     private bool isSprinting;
     private bool isCrawling;
 
+    private bool isBeingCarried;
+    private GameObject parentCarrying;
+
     private enum PlayerActionState
     {
         WALK,
@@ -31,11 +34,16 @@ public class PlayerMotor : CharacterMotor
         controller = GetComponent<CharacterController>();
         isSprinting = false;
         isCrawling = false;
+        isBeingCarried = false;
     }
 
     // Update is called once per frame
     void Update()
     {
+        //   TODO: make this better
+        if (isBeingCarried) {
+            controller.transform.position = parentCarrying.transform.position;
+        }
         isGrounded = controller.isGrounded;
         
     }
@@ -89,6 +97,18 @@ public class PlayerMotor : CharacterMotor
 
         transform.LookAt(transform.position + moveDirection);
 
+    }
+
+    public void GetCarriedBy(GameObject parent) {
+        Debug.Log("player get carried by " + parent.name);
+        parentCarrying = parent;
+        isBeingCarried = true;
+    }
+
+    public void GetPutDownBy(GameObject parent) {
+        Debug.Log("player get put down by " + parent.name);
+        parentCarrying = null;
+        isBeingCarried = false;
     }
 
     // TODO: repurposing this for climbing, clean this up later
